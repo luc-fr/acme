@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "lint": "eslint . --ext .js, .jsx, .ts, .tsx --no-error-on-unmatched-pattern",
     "build": "next build",
     "start": "next start"
   },
