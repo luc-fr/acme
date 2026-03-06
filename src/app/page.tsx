@@ -1,3 +1,3 @@
 export default function Page() {
-    return 'Sistema em construção.';
-};
+  return 'Sistema em construção.';
+}
