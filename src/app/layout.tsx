@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { inter } from './ui/fonts';
-import './globals.css';
+import { inter } from '@/app/ui/fonts';
+import '@/app/globals.css';
 
 export const metadata: Metadata = {
   title: 'ACME',
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
-      <body className={inter.className}>{children}</body>
+    <html lang='pt-br'>
+      <body className={inter.className}>{ children }</body>
     </html>
   );
 }
