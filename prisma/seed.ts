@@ -113,8 +113,8 @@ async function main() {
     for (const data of invoicesData) {
         await prisma.invoice.create({
             data: {
-                amount: data.amount
-                status: data.status
+                amount: data.amount,
+                status: data.status,
                 date: new Date(data.date),
                 customerId: data.customer.id
             }
@@ -154,7 +154,7 @@ async function main() {
 main()
     .catch((erro) => {
         console.log('Erro ao popular o banco:', erro);
-    });
-    .finally( () => {
+    })
+    .finally(async () => {
         await prisma.$disconnect();
     });
