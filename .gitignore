@@ -2,3 +2,5 @@ node_modules/
 .next/
 next-env.d.ts
 *.vsix
+.env
+!.env.exemple
