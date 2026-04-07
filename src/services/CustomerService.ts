@@ -43,7 +43,7 @@ export async function createCustomer(data: CreateCustomerData): Promise<Customer
 };
 
 export async function updateCustomer(
-    id: string;
+    id: string,
     data: UpdateCustomerData
 ): Promise<Customer> {
 
