@@ -1,24 +1,24 @@
 import { z } from 'zod';
 import {
-    findAllCustomers,
-    findCustomerById,
-    createCustomer,
-    updateCustomer,
-    deleteCustomer
+  findAllCustomers,
+  findCustomerById,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer
 } from '@/services/CustomerService';
-import { ApiError } from '@/types';
+import { ApiError, SortOrder } from '@/types';
 
 export const CreateCustomerSchema = z.object({
-    name: z
-        .string({ required_error: 'O campo é obrigatório.' })
-        .min(1, 'O campo não pode estar vazio.')
-        .max(100, 'O campo deve ter no máximo 100 caracteres.'),
-    email: z
-        .string({ required_error: 'O campo é obrigatório.' })
-        .email('O campo possui formato inválido.'),
-    imageUrl: z
-        .string({ required_error: 'O campo é obrigatório.' })
-        .url('O campo possui formato inválido.')
+  name: z
+    .string({ required_error: 'O campo é obrigatório.' })
+    .min(1, 'O campo não pode estar vazio.')
+    .max(100, 'O campo deve ter no máximo 100 caracteres.'),
+  email: z
+    .string({ required_error: 'O campo é obrigatório.' })
+    .email('O campo possui formato inválido.'),
+  imageUrl: z
+    .string({ required_error: 'O campo é obrigatório.' })
+    .url('O campo possui formato inválido.')
 });
 
 export const UpdateCustomerSchema = CreateCustomerSchema.partial();
@@ -27,95 +27,105 @@ export type CreateCustomerDTO = z.infer<typeof CreateCustomerSchema>;
 export type UpdateCustomerDTO = z.infer<typeof UpdateCustomerSchema>;
 
 function buildErrorResponse(
-    message: string,
-    details?: Record<string, string[]>
+  message: string,
+  details?: Record<string, string[]>
 ): ApiError {
-    if (details) {
-        return { error: message, details };
-    };
+  if (details) {
+    return { error: message, details };
+  };
 
-    return { error: message };
+  return { error: message };
 };
 
 export const CustomerController = {
-    async getAll(searchParams: URLSearchParams) {
-        const search = searchParams.get('search') ?? undefined;
+  async getAll(searchParams: URLSearchParams) {
+    const search = searchParams.get('search') ?? undefined;
+    const page = Number(searchParams.get('page')) || 1;
+    const limit = Number(searchParams.get('limit')) || 10;
+    const sortBy = searchParams.get('sortBy') ?? 'name';
+    const order = (searchParams.get('order') as SortOrder) ?? 'asc';
 
-        const customers = await findAllCustomers({ search });
+    const customers = await findAllCustomers({
+      search,
+      page,
+      limit,
+      sortBy,
+      order
+    });
 
-        return { status: 200, body: customers }
-    },
+    return { status: 200, body: customers };
+  },
 
-    async getById(id: string) {
-        const customer = await findCustomerById(id);
+  async getById(id: string) {
+    const customer = await findCustomerById(id);
 
-        if (!customer) {
-            return {
-                status: 404,
-                body: buildErrorResponse('Cliente não encontrado.')
-            };
-        };
+    if (!customer) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    };
 
-        return { status: 200, body: customer };
-    },
+    return { status: 200, body: customer };
+  },
 
-    async create(data: unknown) {
-        const parsed = CreateCustomerSchema.safeParse(data);
+  async create(data: unknown) {
+    const parsed = CreateCustomerSchema.safeParse(data);
 
-        if (!parsed.success) {
-            return {
-                status: 400,
-                body: buildErrorResponse(
-                    'Dados inválidos.',
-                    parsed.error.flatten().fieldErrors as Record<string, string[]>
-                )
-            };
-        };
+    if (!parsed.success) {
+      return {
+        status: 400,
+        body: buildErrorResponse(
+          'Dados inválidos.',
+          parsed.error.flatten().fieldErrors as Record<string, string[]>
+        )
+      };
+    };
 
-        const customer = await createCustomer(parsed.data);
+    const customer = await createCustomer(parsed.data);
 
-        return { status: 201, body: customer }
-    },
+    return { status: 201, body: customer }
+  },
 
-    async update(id: string, data: unknown) {
-        const existing = await findCustomerById(id);
+  async update(id: string, data: unknown) {
+    const existing = await findCustomerById(id);
 
-        if (!existing) {
-            return {
-                status: 404,
-                body: buildErrorResponse('Cliente não encontrado.')
-            };
-        };
+    if (!existing) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    };
 
-        const parsed = UpdateCustomerSchema.safeParse(data);
+    const parsed = UpdateCustomerSchema.safeParse(data);
 
-        if (!parsed.success) {
-            return {
-                status: 400,
-                body: buildErrorResponse(
-                    'Dados inválidos.',
-                    parsed.error.flatten().fieldErrors as Record<string, string[]>
-                )
-            };
-        };
+    if (!parsed.success) {
+      return {
+        status: 400,
+        body: buildErrorResponse(
+          'Dados inválidos.',
+          parsed.error.flatten().fieldErrors as Record<string, string[]>
+        )
+      };
+    };
 
-        const customer = await updateCustomer(id, parsed.data);
+    const customer = await updateCustomer(id, parsed.data);
 
-        return { status: 200, body: customer };
-    },
+    return { status: 200, body: customer };
+  },
 
-    async remove(id: string) {
-        const existing = await findCustomerById(id);
+  async remove(id: string) {
+    const existing = await findCustomerById(id);
 
-        if (!existing) {
-            return {
-                status: 404,
-                body: buildErrorResponse('Cliente não encontrado.')
-            };
-        };
+    if (!existing) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    };
 
-        await deleteCustomer(id);
+    await deleteCustomer(id);
 
-        return { status: 200, body: { message: 'Cliente removido com sucesso.' } }
-    }
+    return { status: 200, body: { message: 'Cliente removido com sucesso.' } }
+  }
 };
